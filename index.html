@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Daybook — Diary &amp; Notebook</title>
+<meta name="description" content="A diary and notebook that autosaves as you write, with photos and a built-in calculator." />
+<meta name="theme-color" content="#222E25" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=Special+Elite&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --desk-top:#222E25; --desk-bot:#111710;
+    --paper:#F4EEDC; --paper-edge:rgba(0,0,0,0.25);
+    --ink:#2E2A22; --ink-muted:#7A7259;
+    --brass:#C2A05E; --brass-dark:#8C6F3D; --brass-soft:rgba(194,160,94,0.18);
+    --oxblood:#7A3030;
+    --cream:#EFE8D6; --muted-dark:#9DAE92;
+    --rule-line:rgba(122,48,48,0.16); --margin-line:rgba(122,48,48,0.4);
+    --grid-line:rgba(46,42,34,0.11);
+    --calc-bg:#15201A; --calc-display:#E4CD93; --calc-display-dim:#7C7053;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:'Inter',sans-serif;
+    background:linear-gradient(160deg,var(--desk-top),var(--desk-bot));
+    color:var(--ink); overscroll-behavior:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{height:100dvh; display:flex; flex-direction:column;}
+  button{font-family:inherit; border:none; background:none; cursor:pointer; color:inherit;}
+  input,textarea{font-family:inherit; border:none; outline:none; background:transparent; color:inherit;}
+  ::placeholder{color:var(--ink-muted); opacity:0.7;}
+  .hidden{display:none !important;}
+
+  /* ---------- header ---------- */
+  header{
+    flex-shrink:0; padding:calc(10px + var(--safe-top)) 16px 8px;
+    display:flex; align-items:baseline; justify-content:space-between;
+  }
+  header h1{
+    margin:0; font-family:'Fraunces',serif; font-weight:600; font-size:22px; color:var(--cream);
+  }
+  header .clock{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted-dark);}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex; gap:4px; padding:0 12px; flex-shrink:0;}
+  .tab{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:10px 0; font-size:14px; font-weight:600; border-radius:10px 10px 0 0;
+    background:rgba(244,238,220,0.08); color:var(--muted-dark);
+    border-bottom:3px solid transparent;
+  }
+  .tab.active{background:var(--paper); color:var(--ink); border-bottom-color:var(--brass);}
+  .tab svg{width:15px; height:15px; flex-shrink:0;}
+
+  /* ---------- main views ---------- */
+  main{flex:1; min-height:0; padding:0 12px 12px; display:flex; flex-direction:column;}
+  .panel{
+    flex:1; min-height:0; display:flex; flex-direction:column;
+    background:var(--paper); border-radius:0 12px 12px 12px;
+    box-shadow:0 8px 24px var(--paper-edge); overflow:hidden;
+  }
+
+  /* ---------- list view ---------- */
+  .list-toolbar{padding:12px; border-bottom:1px solid rgba(46,42,34,0.12); flex-shrink:0;}
+  .new-btn{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:11px 0; border-radius:8px; background:var(--brass); color:#2A2010;
+    font-weight:700; font-size:14px;
+  }
+  .new-btn:active{transform:scale(0.98);}
+  .entry-list{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .empty-state{padding:40px 20px; text-align:center; color:var(--ink-muted); font-size:14px;}
+  .entry-row{
+    padding:13px 14px; border-bottom:1px solid rgba(46,42,34,0.08);
+    display:flex; flex-direction:column; gap:3px; position:relative;
+  }
+  .entry-row.active{background:var(--brass-soft);}
+  .entry-row .row-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .entry-title{font-size:14.5px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px;}
+  .entry-title.diary-font{font-family:'Special Elite',monospace; font-weight:400;}
+  .photo-badge{display:inline-flex; align-items:center; gap:2px; font-size:10.5px; color:var(--ink-muted); font-weight:500; flex-shrink:0;}
+  .photo-badge svg{width:11px; height:11px;}
+  .entry-del{flex-shrink:0; color:var(--oxblood); padding:8px; margin:-8px; opacity:0.65;}
+  .entry-del svg{width:15px; height:15px; display:block; pointer-events:none;}
+  .row-bottom{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .entry-preview{font-size:12px; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .entry-time{font-size:11px; color:var(--ink-muted); flex-shrink:0;}
+  .list-footer{padding:8px; text-align:center; border-top:1px solid rgba(46,42,34,0.1); flex-shrink:0;}
+  .clear-link{font-size:12px; color:var(--ink-muted); text-decoration:underline; padding:6px 10px;}
+
+  /* ---------- editor view ---------- */
+  .editor{flex:1; min-height:0; display:none; flex-direction:column;}
+  .editor.show{display:flex;}
+  .editor-top{display:flex; align-items:center; justify-content:space-between; padding:14px 16px 6px; flex-shrink:0;}
+  .back-btn{display:flex; align-items:center; gap:4px; font-size:13px; color:var(--ink-muted); padding:6px; margin:-6px;}
+  .back-btn svg{width:14px; height:14px;}
+  .status-badge{display:flex; align-items:center; gap:6px; font-size:11px;}
+  .status-dot{width:6px; height:6px; border-radius:50%;}
+  .status-pending .status-dot{background:#C2A05E; animation:pulse 1.2s infinite;}
+  .status-pending{color:#9C7A3D;}
+  .status-saved .status-dot{background:#5E7A52;}
+  .status-saved{color:#5E7A52;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
+
+  .editor-heading{padding:0 16px 8px; flex-shrink:0;}
+  .editor-heading h2{margin:0; font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:var(--ink);}
+  .editor-heading .sub{font-size:11px; color:var(--ink-muted); margin-top:2px;}
+  .title-input{width:100%; font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:var(--ink);}
+
+  /* ---------- photo toolbar + strip ---------- */
+  .photo-toolbar{padding:0 16px 8px; flex-shrink:0;}
+  .add-photo-btn{
+    display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:20px;
+    background:rgba(122,48,48,0.09); color:var(--oxblood); font-size:12.5px; font-weight:600;
+  }
+  .add-photo-btn svg{width:14px; height:14px;}
+  .add-photo-btn:active{transform:scale(0.96);}
+  .photo-strip{display:flex; gap:8px; padding:0 16px 10px; overflow-x:auto; flex-shrink:0; -webkit-overflow-scrolling:touch;}
+  .photo-strip:empty{padding:0; display:none;}
+  .photo-thumb{position:relative; flex-shrink:0; width:74px; height:74px; border-radius:9px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.18);}
+  .photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-thumb .photo-del{
+    position:absolute; top:3px; right:3px; width:20px; height:20px; border-radius:50%;
+    background:rgba(20,16,10,0.65); color:#F4EEDC; display:flex; align-items:center; justify-content:center;
+  }
+  .photo-thumb .photo-del svg{width:11px; height:11px; pointer-events:none;}
+  .photo-placeholder{flex-shrink:0; width:74px; height:74px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:rgba(46,42,34,0.07); color:var(--ink-muted); font-size:10px;}
+
+  .editor-body{flex:1; min-height:0; padding:0 6px 6px;}
+  textarea.page{
+    width:100%; height:100%; resize:none; padding:0 16px; font-size:15px;
+  }
+  textarea.page.diary{
+    font-family:'Special Elite',monospace; line-height:28px; padding-left:44px;
+    background-image:repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--rule-line) 28px),
+      linear-gradient(to right, transparent 30px, var(--margin-line) 31px, transparent 32px);
+  }
+  textarea.page.notebook{
+    font-family:'Inter',sans-serif; line-height:24px;
+    background-image:linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size:24px 24px,24px 24px;
+  }
+  .editor-foot{
+    padding:8px 16px calc(8px + 0px); border-top:1px solid rgba(46,42,34,0.08);
+    display:flex; justify-content:space-between; font-size:11px; color:var(--ink-muted); flex-shrink:0;
+  }
+
+  /* ---------- empty page placeholder ---------- */
+  .no-entry{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:30px; text-align:center; color:var(--ink-muted); font-size:14px;}
+  .no-entry svg{width:30px; height:30px; opacity:0.6;}
+
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed; right:18px; bottom:calc(18px + var(--safe-bottom));
+    width:56px; height:56px; border-radius:50%; background:var(--brass); color:#2A2010;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.35); z-index:40;
+  }
+  .fab svg{width:24px; height:24px;}
+  .fab:active{transform:scale(0.94);}
+
+  /* ---------- calculator drawer ---------- */
+  .scrim{position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:45; display:none;}
+  .scrim.show{display:block;}
+  .calc-drawer{
+    position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:var(--calc-bg); border-radius:18px 18px 0 0;
+    box-shadow:0 -10px 30px rgba(0,0,0,0.45);
+    max-height:85vh; display:flex; flex-direction:column;
+    transform:translateY(100%); transition:transform 0.25s ease;
+    padding-bottom:var(--safe-bottom);
+  }
+  .calc-drawer.show{transform:translateY(0);}
+  .calc-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(194,160,94,0.2); flex-shrink:0;}
+  .calc-head .title{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--cream);}
+  .calc-head button{color:var(--muted-dark); padding:6px; margin:-6px;}
+  .calc-head svg{width:20px; height:20px;}
+
+  .calc-display-wrap{padding:12px 16px; flex-shrink:0;}
+  .calc-screen{background:#0D140F; border-radius:10px; padding:10px 14px; box-shadow:inset 0 2px 6px rgba(0,0,0,0.5);}
+  .calc-op-line{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--calc-display-dim); height:16px;}
+  .calc-main-line{font-family:'JetBrains Mono',monospace; font-size:30px; text-align:right; color:var(--calc-display); white-space:nowrap; overflow:hidden;}
+  .insert-btn{
+    width:100%; margin-top:8px; padding:10px 0; border-radius:8px; font-size:13px; font-weight:600;
+    background:rgba(194,160,94,0.15); color:var(--brass); display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .insert-btn:disabled{opacity:0.35;}
+  .insert-btn svg{width:14px; height:14px;}
+
+  .calc-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:0 16px 12px; flex-shrink:0;}
+  .calc-key{
+    padding:14px 0; border-radius:8px; font-size:17px; font-weight:600;
+    font-family:'JetBrains Mono',monospace; color:var(--cream); background:rgba(255,255,255,0.05);
+  }
+  .calc-key:active{transform:scale(0.95); filter:brightness(1.2);}
+  .calc-key.op{background:rgba(194,160,94,0.25); color:var(--brass);}
+  .calc-key.util{background:rgba(255,255,255,0.07); font-size:15px;}
+  .calc-key.eq{background:var(--oxblood); color:#F4EEDC;}
+  .calc-key.del{background:rgba(122,48,48,0.22); color:#E9A8A8;}
+
+  .calc-tape{flex:1; min-height:0; overflow-y:auto; padding:0 16px 16px; -webkit-overflow-scrolling:touch;}
+  .tape-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .tape-head span{font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-dark);}
+  .tape-head button{font-size:11px; color:var(--muted-dark); padding:6px; margin:-6px;}
+  .tape-empty{font-size:12px; color:var(--muted-dark);}
+  .tape-row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 0; border-bottom:1px dashed rgba(194,160,94,0.15); font-family:'JetBrains Mono',monospace; font-size:13.5px;}
+  .tape-row .expr{color:var(--muted-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tape-row .expr b{color:var(--cream); font-weight:600;}
+  .tape-row button{flex-shrink:0; color:var(--brass); padding:6px; margin:-6px;}
+  .tape-row button svg{width:13px; height:13px; display:block; pointer-events:none;}
+  .tape-row button:disabled{opacity:0.3;}
+
+  /* ---------- custom modal (replaces native confirm/alert, which Android & PWAs block) ---------- */
+  .modal-scrim{position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:90; display:none; align-items:center; justify-content:center; padding:24px;}
+  .modal-scrim.show{display:flex;}
+  .modal-card{
+    width:100%; max-width:320px; background:var(--paper); border-radius:14px; padding:20px;
+    box-shadow:0 12px 36px rgba(0,0,0,0.5);
+  }
+  .modal-card h3{margin:0 0 8px; font-family:'Fraunces',serif; font-size:18px; color:var(--ink);}
+  .modal-card p{margin:0 0 18px; font-size:13.5px; color:var(--ink-muted); line-height:1.5;}
+  .modal-actions{display:flex; gap:10px;}
+  .modal-btn{flex:1; padding:11px 0; border-radius:8px; font-size:14px; font-weight:600; text-align:center;}
+  .modal-btn.cancel{background:rgba(46,42,34,0.08); color:var(--ink);}
+  .modal-btn.danger{background:var(--oxblood); color:#F4EEDC;}
+  .modal-btn:active{transform:scale(0.97);}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; left:50%; bottom:calc(90px + var(--safe-bottom)); transform:translateX(-50%) translateY(10px);
+    background:#1B241C; color:var(--cream); font-size:12.5px; padding:9px 16px; border-radius:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.4); z-index:95; opacity:0; pointer-events:none; transition:all 0.2s ease;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* desktop-ish niceties on wider screens */
+  @media (min-width:640px){
+    #app{max-width:480px; margin:0 auto; box-shadow:0 0 60px rgba(0,0,0,0.5);}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>Daybook</h1>
+    <div class="clock" id="clock">—</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tabDiary" data-section="diary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Diary
+    </button>
+    <button class="tab" id="tabNotebook" data-section="notebook">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M14 4v16"/><path d="M18 8h2"/><path d="M18 12h2"/><path d="M18 16h2"/></svg>
+      Notebook
+    </button>
+  </div>
+
+  <main>
+    <div class="panel">
+      <!-- LIST VIEW -->
+      <div class="list-view" id="listView">
+        <div class="list-toolbar">
+          <button class="new-btn" id="newBtn">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            <span id="newBtnLabel">New diary entry</span>
+          </button>
+        </div>
+        <div class="entry-list" id="entryList"></div>
+        <div class="list-footer">
+          <button class="clear-link" id="clearAllBtn">Clear everything</button>
+        </div>
+      </div>
+
+      <!-- EDITOR VIEW -->
+      <div class="editor" id="editorView">
+        <div class="editor-top">
+          <button class="back-btn" id="backBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Entries
+          </button>
+          <div class="status-badge" id="statusBadge"></div>
+        </div>
+        <div class="editor-heading" id="editorHeading"></div>
+
+        <div class="photo-toolbar">
+          <button class="add-photo-btn" id="addPhotoBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Add photo
+          </button>
+        </div>
+        <div class="photo-strip" id="photoStrip"></div>
+
+        <div class="editor-body">
+          <textarea class="page" id="pageText" placeholder=""></textarea>
+        </div>
+        <div class="editor-foot">
+          <span id="wordCount">0 words</span>
+          <span>everything here saves itself</span>
+        </div>
+      </div>
+
+      <!-- EMPTY PLACEHOLDER -->
+      <div class="no-entry hidden" id="noEntry">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        <span>Select a page on the list, or start a new one.</span>
+      </div>
+    </div>
+  </main>
+
+  <input type="file" id="photoInput" accept="image/*" multiple class="hidden" />
+
+  <button class="fab" id="calcFab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/><line x1="16" y1="18" x2="16" y2="18"/></svg>
+  </button>
+
+  <div class="scrim" id="calcScrim"></div>
+  <div class="calc-drawer" id="calcDrawer">
+    <div class="calc-head">
+      <span class="title">Calculator</span>
+      <button id="calcCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="calc-display-wrap">
+      <div class="calc-screen">
+        <div class="calc-op-line" id="calcOpLine">&nbsp;</div>
+        <div class="calc-main-line" id="calcMainLine">0</div>
+      </div>
+      <button class="insert-btn" id="insertResultBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        Insert into page
+      </button>
+    </div>
+    <div class="calc-grid" id="calcGrid"></div>
+    <div class="calc-tape">
+      <div class="tape-head">
+        <span>Tape</span>
+        <button id="clearTapeBtn">Clear tape</button>
+      </div>
+      <div id="tapeList"></div>
+    </div>
+  </div>
+
+  <!-- confirm modal -->
+  <div class="modal-scrim" id="modalScrim">
+    <div class="modal-card">
+      <h3 id="modalTitle">Delete this?</h3>
+      <p id="modalMessage">This can't be undone.</p>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="modalCancelBtn">Cancel</button>
+        <button class="modal-btn danger" id="modalConfirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- storage helpers (localStorage, namespaced) ---------------- */
+  const NS = "daybook:";
+  function lsGet(key){ try { return localStorage.getItem(NS+key); } catch(e){ return null; } }
+  function lsSet(key, val){ try { localStorage.setItem(NS+key, val); return true; } catch(e){ console.error("save failed", e); return false; } }
+  function lsDel(key){ try { localStorage.removeItem(NS+key); } catch(e){ /* ignore */ } }
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function sortByUpdated(list){ return [...list].sort((a,b)=>b.updatedAt-a.updatedAt); }
+  function previewOf(text){
+    const t = (text||"").replace(/\s+/g," ").trim();
+    if(!t) return "Empty page";
+    return t.length>64 ? t.slice(0,64)+"…" : t;
+  }
+  function formatDateFull(ts){
+    return new Date(ts).toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  }
+  function formatTime(ts){
+    return new Date(ts).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  }
+  function formatTimeSec(ts){
+    return new Date(ts).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit",second:"2-digit"});
+  }
+  function formatShort(ts){
+    const d = new Date(ts), today = new Date();
+    if(d.toDateString()===today.toDateString()) return formatTime(ts);
+    return d.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  }
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  /* ---------------- toast ---------------- */
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>toastEl.classList.remove("show"), 1800);
+  }
+
+  /* ---------------- custom confirm modal ---------------- */
+  const modalScrim = document.getElementById("modalScrim");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalMessage = document.getElementById("modalMessage");
+  const modalCancelBtn = document.getElementById("modalCancelBtn");
+  const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+  let modalConfirmHandler = null;
+
+  function openConfirm(title, message, onConfirm){
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalConfirmHandler = onConfirm;
+    modalScrim.classList.add("show");
+  }
+  function closeConfirm(){
+    modalScrim.classList.remove("show");
+    modalConfirmHandler = null;
+  }
+  modalCancelBtn.addEventListener("click", closeConfirm);
+  modalScrim.addEventListener("click", (ev)=>{ if(ev.target===modalScrim) closeConfirm(); });
+  modalConfirmBtn.addEventListener("click", ()=>{
+    const fn = modalConfirmHandler;
+    closeConfirm();
+    if(fn) fn();
+  });
+
+  /* ---------------- state ---------------- */
+  let section = "diary"; // 'diary' | 'notebook'
+  let diaryIndex = sortByUpdated(JSON.parse(lsGet("diary-index") || "[]"));
+  let notebookIndex = sortByUpdated(JSON.parse(lsGet("notebook-index") || "[]"));
+  let activeDiaryId = diaryIndex[0] ? diaryIndex[0].id : null;
+  let activeNotebookId = notebookIndex[0] ? notebookIndex[0].id : null;
+  let saveTimer = null;
+  let tape = JSON.parse(lsGet("calc-tape") || "[]");
+
+  function activeIndex(){ return section==="diary" ? diaryIndex : notebookIndex; }
+  function activeId(){ return section==="diary" ? activeDiaryId : activeNotebookId; }
+  function setActiveId(id){ if(section==="diary") activeDiaryId=id; else activeNotebookId=id; }
+  function activeEntry(){ return activeIndex().find(e=>e.id===activeId()) || null; }
+  function persistIndex(sec){
+    lsSet(sec+"-index", JSON.stringify(sec==="diary"?diaryIndex:notebookIndex));
+  }
+
+  /* ---------------- photos ---------------- */
+  function photosKey(sec, id){ return sec+":photos:"+id; }
+  function getPhotos(sec, id){
+    const raw = lsGet(photosKey(sec,id));
+    return raw ? JSON.parse(raw) : [];
+  }
+  function setPhotos(sec, id, photos){
+    if(photos.length===0){ lsDel(photosKey(sec,id)); return true; }
+    return lsSet(photosKey(sec,id), JSON.stringify(photos));
+  }
+
+  function compressImage(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("read failed"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("decode failed"));
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if(w > maxDim || h > maxDim){
+            if(w >= h){ h = Math.round(h * (maxDim/w)); w = maxDim; }
+            else { w = Math.round(w * (maxDim/h)); h = maxDim; }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ---------------- DOM refs ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const clockEl = $("clock");
+  const tabDiary = $("tabDiary"), tabNotebook = $("tabNotebook");
+  const listView = $("listView"), editorView = $("editorView"), noEntry = $("noEntry");
+  const entryList = $("entryList");
+  const newBtn = $("newBtn"), newBtnLabel = $("newBtnLabel");
+  const clearAllBtn = $("clearAllBtn");
+  const backBtn = $("backBtn");
+  const statusBadge = $("statusBadge");
+  const editorHeading = $("editorHeading");
+  const pageText = $("pageText");
+  const wordCountEl = $("wordCount");
+  const photoStrip = $("photoStrip");
+  const addPhotoBtn = $("addPhotoBtn");
+  const photoInput = $("photoInput");
+
+  /* ---------------- clock ---------------- */
+  function tickClock(){
+    const now = new Date();
+    clockEl.textContent = now.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}) + " · " + formatTimeSec(now.getTime());
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  /* ---------------- rendering: list ---------------- */
+  function renderList(){
+    const list = activeIndex();
+    const aId = activeId();
+    newBtnLabel.textContent = section==="diary" ? "New diary entry" : "New note";
+
+    if(list.length===0){
+      entryList.innerHTML = '<div class="empty-state">' +
+        (section==="diary" ? "Nothing written yet. Start today's entry." : "No notes yet. Jot something down.") +
+        '</div>';
+      return;
+    }
+
+    entryList.innerHTML = list.map(e => {
+      const title = section==="diary" ? formatDateFull(e.createdAt) : (e.title || "Untitled note");
+      const titleClass = section==="diary" ? "entry-title diary-font" : "entry-title";
+      const active = e.id===aId ? " active" : "";
+      const photoBadge = e.photoCount ? '<span class="photo-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>'+e.photoCount+'</span>' : '';
+      return (
+        '<div class="entry-row'+active+'" data-id="'+e.id+'">' +
+          '<div class="row-top">' +
+            '<span class="'+titleClass+'"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(title)+'</span>'+photoBadge+'</span>' +
+            '<button type="button" class="entry-del" data-del="'+e.id+'" aria-label="Delete">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="row-bottom">' +
+            '<span class="entry-preview">'+escapeHtml(e.preview||"Empty page")+'</span>' +
+            '<span class="entry-time">'+formatShort(e.updatedAt)+'</span>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join("");
+  }
+
+  /* ---------------- rendering: editor ---------------- */
+  function renderEditor(){
+    const e = activeEntry();
+    if(!e){
+      editorView.classList.remove("show");
+      noEntry.classList.remove("hidden");
+      return;
+    }
+    noEntry.classList.add("hidden");
+    editorView.classList.add("show");
+
+    if(section==="diary"){
+      editorHeading.innerHTML =
+        '<h2>'+escapeHtml(formatDateFull(e.createdAt))+'</h2>' +
+        '<div class="sub">first written '+formatTime(e.createdAt)+'</div>';
+      pageText.className = "page diary";
+      pageText.placeholder = "Write what happened today…";
+    } else {
+      editorHeading.innerHTML = '<input class="title-input" id="titleInput" placeholder="Untitled note" value="'+escapeHtml(e.title||"")+'" />';
+      pageText.className = "page notebook";
+      pageText.placeholder = "Start writing…";
+      $("titleInput").addEventListener("input", onTitleInput);
+    }
+
+    const key = section+":"+e.id;
+    pageText.value = lsGet(key) || "";
+    updateWordCount();
+    renderStatus({state:"idle"});
+    renderPhotos();
+  }
+
+  function renderPhotos(){
+    const e = activeEntry();
+    if(!e){ photoStrip.innerHTML = ""; return; }
+    const photos = getPhotos(section, e.id);
+    photoStrip.innerHTML = photos.map(p =>
+      '<div class="photo-thumb" data-photo-id="'+p.id+'">' +
+        '<img src="'+p.dataUrl+'" alt="attached photo" />' +
+        '<button type="button" class="photo-del" data-photo-del="'+p.id+'" aria-label="Remove photo">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>'
+    ).join("");
+  }
+
+  function updateWordCount(){
+    const t = pageText.value.trim();
+    const n = t ? t.split(/\s+/).length : 0;
+    wordCountEl.textContent = n + (n===1 ? " word" : " words");
+  }
+
+  function renderStatus(status){
+    if(status.state==="pending"){
+      statusBadge.className = "status-badge status-pending";
+      statusBadge.innerHTML = '<span class="status-dot"></span>writing…';
+    } else if(status.state==="saved"){
+      statusBadge.className = "status-badge status-saved";
+      statusBadge.innerHTML = '<span class="status-dot"></span>saved '+formatTime(status.time);
+    } else {
+      statusBadge.className = "status-badge";
+      statusBadge.innerHTML = "";
+    }
+  }
+
+  /* ---------------- view switching ---------------- */
+  function showList(){
+    listView.classList.remove("hidden");
+    editorView.classList.remove("show");
+    noEntry.classList.add("hidden");
+  }
+  function showEditor(){
+    listView.classList.add("hidden");
+    renderEditor();
+  }
+
+  function switchSection(sec){
+    section = sec;
+    tabDiary.classList.toggle("active", sec==="diary");
+    tabNotebook.classList.toggle("active", sec==="notebook");
+    showList();
+    renderList();
+  }
+
+  tabDiary.addEventListener("click", ()=>switchSection("diary"));
+  tabNotebook.addEventListener("click", ()=>switchSection("notebook"));
+  backBtn.addEventListener("click", ()=>{ showList(); renderList(); });
+
+  /* ---------------- create / select / delete ---------------- */
+  newBtn.addEventListener("click", ()=>{
+    const now = Date.now();
+    if(section==="diary"){
+      const entry = {id:uid(), createdAt:now, updatedAt:now, preview:"Empty page", photoCount:0};
+      diaryIndex = sortByUpdated([entry, ...diaryIndex]);
+      persistIndex("diary");
+      lsSet("diary:"+entry.id, "");
+      activeDiaryId = entry.id;
+    } else {
+      const entry = {id:uid(), title:"", createdAt:now, updatedAt:now, preview:"Empty page", photoCount:0};
+      notebookIndex = sortByUpdated([entry, ...notebookIndex]);
+      persistIndex("notebook");
+      lsSet("notebook:"+entry.id, "");
+      activeNotebookId = entry.id;
+    }
+    showEditor();
+    renderStatus({state:"saved", time:now});
+    setTimeout(()=>pageText.focus(), 50);
+  });
+
+  entryList.addEventListener("click", (ev)=>{
+    const delBtn = ev.target.closest("[data-del]");
+    if(delBtn){
+      ev.stopPropagation();
+      const id = delBtn.getAttribute("data-del");
+      openConfirm("Delete this page?", "This page and any attached photos will be permanently removed.", ()=>deleteEntry(id));
+      return;
+    }
+    const row = ev.target.closest(".entry-row");
+    if(row){
+      setActiveId(row.getAttribute("data-id"));
+      showEditor();
+      renderList();
+    }
+  });
+
+  function deleteEntry(id){
+    const list = activeIndex();
+    const entry = list.find(e=>e.id===id);
+    const photos = entry ? getPhotos(section, id) : [];
+    if(section==="diary"){
+      diaryIndex = diaryIndex.filter(e=>e.id!==id);
+      persistIndex("diary");
+      lsDel("diary:"+id);
+      if(activeDiaryId===id) activeDiaryId = diaryIndex[0] ? diaryIndex[0].id : null;
+    } else {
+      notebookIndex = notebookIndex.filter(e=>e.id!==id);
+      persistIndex("notebook");
+      lsDel("notebook:"+id);
+      if(activeNotebookId===id) activeNotebookId = notebookIndex[0] ? notebookIndex[0].id : null;
+    }
+    if(photos.length) lsDel(photosKey(section, id));
+    renderList();
+    if(!activeId()){ showList(); }
+    else renderEditor();
+    showToast("Page deleted");
+  }
+
+  clearAllBtn.addEventListener("click", ()=>{
+    openConfirm("Clear everything?", "Every diary entry, note, photo, and the calculator tape will be permanently removed.", ()=>{
+      diaryIndex.forEach(e=>{ lsDel("diary:"+e.id); lsDel(photosKey("diary", e.id)); });
+      notebookIndex.forEach(e=>{ lsDel("notebook:"+e.id); lsDel(photosKey("notebook", e.id)); });
+      lsDel("diary-index"); lsDel("notebook-index"); lsDel("calc-tape");
+      diaryIndex = []; notebookIndex = [];
+      activeDiaryId = null; activeNotebookId = null;
+      tape = [];
+      showList();
+      renderList();
+      renderTape();
+      showToast("Everything cleared");
+    });
+  });
+
+  /* ---------------- autosave on type ---------------- */
+  pageText.addEventListener("input", ()=>{
+    const e = activeEntry();
+    if(!e) return;
+    const text = pageText.value;
+    updateWordCount();
+    renderStatus({state:"pending"});
+
+    const list = activeIndex();
+    const idx = list.findIndex(x=>x.id===e.id);
+    if(idx>-1){
+      list[idx] = {...list[idx], updatedAt:Date.now(), preview:previewOf(text)};
+      if(section==="diary") diaryIndex = sortByUpdated(list); else notebookIndex = sortByUpdated(list);
+    }
+
+    if(saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      lsSet(section+":"+e.id, text);
+      persistIndex(section);
+      renderStatus({state:"saved", time:Date.now()});
+      renderList(); // refresh ordering/preview without losing focus
+    }, 500);
+  });
+
+  let titleTimer = null;
+  function onTitleInput(ev){
+    const e = activeEntry();
+    if(!e) return;
+    const title = ev.target.value;
+    const idx = notebookIndex.findIndex(x=>x.id===e.id);
+    if(idx>-1) notebookIndex[idx] = {...notebookIndex[idx], title, updatedAt:Date.now()};
+    if(titleTimer) clearTimeout(titleTimer);
+    renderStatus({state:"pending"});
+    titleTimer = setTimeout(()=>{
+      notebookIndex = sortByUpdated(notebookIndex);
+      persistIndex("notebook");
+      renderStatus({state:"saved", time:Date.now()});
+      renderList();
+    }, 400);
+  }
+
+  /* ---------------- photo attachments ---------------- */
+  addPhotoBtn.addEventListener("click", ()=>{
+    if(!activeEntry()) return;
+    photoInput.value = "";
+    photoInput.click();
+  });
+
+  photoInput.addEventListener("change", async ()=>{
+    const e = activeEntry();
+    if(!e || !photoInput.files || photoInput.files.length===0) return;
+    const files = Array.from(photoInput.files);
+    renderStatus({state:"pending"});
+
+    const placeholders = files.map(()=>{
+      const ph = document.createElement("div");
+      ph.className = "photo-placeholder";
+      ph.textContent = "…";
+      photoStrip.appendChild(ph);
+      return ph;
+    });
+
+    const existing = getPhotos(section, e.id);
+    const added = [];
+    for(let i=0;i<files.length;i++){
+      try{
+        const dataUrl = await compressImage(files[i], 1024, 0.6);
+        added.push({id:uid(), dataUrl, addedAt:Date.now()});
+      }catch(err){
+        console.error("photo compress failed", err);
+      }
+      if(placeholders[i]) placeholders[i].remove();
+    }
+
+    if(added.length===0){
+      showToast("Couldn't add photo");
+      renderStatus({state:"idle"});
+      return;
+    }
+
+    const photos = existing.concat(added);
+    const ok = setPhotos(section, e.id, photos);
+    if(!ok){
+      showToast("Storage full — try removing some photos");
+      renderPhotos();
+      renderStatus({state:"idle"});
+      return;
+    }
+
+    const list = activeIndex();
+    const idx = list.findIndex(x=>x.id===e.id);
+    if(idx>-1){
+      list[idx] = {...list[idx], updatedAt:Date.now(), photoCount:photos.length};
+      if(section==="diary") diaryIndex = sortByUpdated(list); else notebookIndex = sortByUpdated(list);
+      persistIndex(section);
+    }
+    renderPhotos();
+    renderList();
+    renderStatus({state:"saved", time:Date.now()});
+    showToast(added.length>1 ? added.length+" photos added" : "Photo added");
+  });
+
+  photoStrip.addEventListener("click", (ev)=>{
+    const delBtn = ev.target.closest("[data-photo-del]");
+    if(!delBtn) return;
+    const photoId = delBtn.getAttribute("data-photo-del");
+    openConfirm("Remove this photo?", "This can't be undone.", ()=>{
+      const e = activeEntry();
+      if(!e) return;
+      const photos = getPhotos(section, e.id).filter(p=>p.id!==photoId);
+      setPhotos(section, e.id, photos);
+      const list = activeIndex();
+      const idx = list.findIndex(x=>x.id===e.id);
+      if(idx>-1){
+        list[idx] = {...list[idx], photoCount:photos.length, updatedAt:Date.now()};
+        if(section==="diary") diaryIndex = sortByUpdated(list); else notebookIndex = sortByUpdated(list);
+        persistIndex(section);
+      }
+      renderPhotos();
+      renderList();
+      showToast("Photo removed");
+    });
+  });
+
+  /* ---------------- calculator (rebuilt for correctness) ---------------- */
+  const calcFab = $("calcFab"), calcScrim = $("calcScrim"), calcDrawer = $("calcDrawer"), calcCloseBtn = $("calcCloseBtn");
+  const calcOpLine = $("calcOpLine"), calcMainLine = $("calcMainLine");
+  const calcGrid = $("calcGrid"), tapeList = $("tapeList");
+  const insertResultBtn = $("insertResultBtn"), clearTapeBtn = $("clearTapeBtn");
+
+  // state machine: display = the number currently being entered/shown
+  // acc = stored accumulator; op = pending operator; fresh = next digit starts a new number
+  let calcDisplay = "0", calcAcc = null, calcOp = null, calcFresh = true;
+  let lastOp = null, lastOperand = null; // for repeat-equals
+
+  const CALC_ROWS = [
+    ["C","±","%","÷"],
+    ["7","8","9","×"],
+    ["4","5","6","-"],
+    ["1","2","3","+"],
+    ["⌫","0",".","="]
+  ];
+  function buildCalcGrid(){
+    let html = "";
+    CALC_ROWS.flat().forEach(key=>{
+      const isEq = key==="=";
+      const isOp = ["+","-","×","÷"].includes(key);
+      const isUtil = ["C","±","%"].includes(key);
+      const isDel = key==="⌫";
+      let cls = "calc-key";
+      if(isEq) cls += " eq";
+      else if(isOp) cls += " op";
+      else if(isUtil) cls += " util";
+      else if(isDel) cls += " del";
+      html += '<button type="button" class="'+cls+'" data-key="'+key+'">'+key+'</button>';
+    });
+    calcGrid.innerHTML = html;
+  }
+  buildCalcGrid();
+
+  function fmtNum(n){
+    if(n===null || n===undefined || !isFinite(n)) return "Error";
+    const r = Math.round(n*1e9)/1e9;
+    let s = r.toString();
+    if(s.length>16) s = r.toPrecision(10).toString();
+    return s;
+  }
+  function compute(a,b,op){
+    switch(op){
+      case "+": return a+b;
+      case "-": return a-b;
+      case "×": return a*b;
+      case "÷": return b===0 ? NaN : a/b;
+      default: return b;
+    }
+  }
+  function renderCalcDisplay(){
+    calcOpLine.textContent = calcOp ? (fmtNum(calcAcc)+" "+calcOp) : "\u00A0";
+    calcMainLine.textContent = calcDisplay;
+  }
+
+  function pressDigit(d){
+    if(calcFresh){
+      calcDisplay = d==="." ? "0." : d;
+    } else if(d==="." && calcDisplay.includes(".")){
+      /* no-op: already has a decimal point */
+    } else if(calcDisplay.replace("-","").replace(".","").length>=14){
+      /* no-op: enough digits */
+    } else {
+      calcDisplay = (calcDisplay==="0" && d!==".") ? d : calcDisplay+d;
+    }
+    calcFresh = false;
+  }
+
+  function pressOperator(newOp){
+    const current = parseFloat(calcDisplay||"0");
+    if(calcAcc===null){
+      calcAcc = current;
+    } else if(!calcFresh){
+      calcAcc = compute(calcAcc, current, calcOp);
+      calcDisplay = fmtNum(calcAcc);
+    }
+    calcOp = newOp;
+    calcFresh = true;
+    lastOp = null; lastOperand = null; // chaining cancels repeat-equals memory
+  }
+
+  function pressEquals(){
+    const current = parseFloat(calcDisplay||"0");
+    let result;
+    if(calcOp!==null && calcAcc!==null && !calcFresh){
+      result = compute(calcAcc, current, calcOp);
+      lastOp = calcOp; lastOperand = current;
+    } else if(calcOp!==null && calcAcc!==null && calcFresh && lastOp===null){
+      // pressed = right after an operator with no new number typed: repeat current as operand
+      result = compute(calcAcc, current, calcOp);
+      lastOp = calcOp; lastOperand = current;
+    } else if(lastOp!==null && lastOperand!==null){
+      // repeat-equals: re-apply the last operation to the new current value
+      result = compute(current, lastOperand, lastOp);
+    } else {
+      return; // nothing to compute
+    }
+    const expr = (calcAcc!==null ? fmtNum(calcAcc) : fmtNum(current)) + " " + (calcOp||lastOp) + " " + fmtNum(calcOp ? current : lastOperand);
+    const entry = {id:uid(), expr, result:fmtNum(result), ts:Date.now()};
+    tape = [entry, ...tape].slice(0,30);
+    lsSet("calc-tape", JSON.stringify(tape));
+    renderTape();
+    calcAcc = result;
+    calcOp = null;
+    calcDisplay = fmtNum(result);
+    calcFresh = true;
+  }
+
+  function pressClear(){
+    calcAcc=null; calcOp=null; calcDisplay="0"; calcFresh=true; lastOp=null; lastOperand=null;
+  }
+  function pressBackspace(){
+    const next = calcDisplay.slice(0,-1);
+    calcDisplay = (next===""||next==="-") ? "0" : next;
+    calcFresh = false;
+  }
+  function pressSign(){
+    if(calcDisplay==="0") return;
+    calcDisplay = calcDisplay.startsWith("-") ? calcDisplay.slice(1) : "-"+calcDisplay;
+  }
+  function pressPercent(){
+    const val = parseFloat(calcDisplay||"0") / 100;
+    calcDisplay = fmtNum(val);
+    calcFresh = true;
+  }
+  function pressCalc(key){
+    if(key==="C") pressClear();
+    else if(key==="⌫") pressBackspace();
+    else if(key==="±") pressSign();
+    else if(key==="%") pressPercent();
+    else if(key==="=") pressEquals();
+    else if(["+","-","×","÷"].includes(key)) pressOperator(key);
+    else pressDigit(key);
+    renderCalcDisplay();
+  }
+  calcGrid.addEventListener("click", (ev)=>{
+    const btn = ev.target.closest("[data-key]");
+    if(btn) pressCalc(btn.getAttribute("data-key"));
+  });
+
+  function renderTape(){
+    if(tape.length===0){
+      tapeList.innerHTML = '<div class="tape-empty">Your calculations will print here.</div>';
+      return;
+    }
+    tapeList.innerHTML = tape.map(t=>
+      '<div class="tape-row">' +
+        '<span class="expr">'+escapeHtml(t.expr)+' = <b>'+escapeHtml(t.result)+'</b></span>' +
+        '<button type="button" data-insert="'+t.id+'" '+(activeId()?'':'disabled')+'>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>' +
+        '</button>' +
+      '</div>'
+    ).join("");
+  }
+  tapeList.addEventListener("click", (ev)=>{
+    const btn = ev.target.closest("[data-insert]");
+    if(!btn) return;
+    const t = tape.find(x=>x.id===btn.getAttribute("data-insert"));
+    if(t) insertText(t.expr+" = "+t.result);
+  });
+
+  function insertText(text){
+    const e = activeEntry();
+    if(!e) return;
+    const active = document.activeElement===pageText;
+    if(active){
+      const start = pageText.selectionStart ?? pageText.value.length;
+      const end = pageText.selectionEnd ?? pageText.value.length;
+      pageText.value = pageText.value.slice(0,start) + text + pageText.value.slice(end);
+      const pos = start + text.length;
+      pageText.setSelectionRange(pos,pos);
+    } else {
+      pageText.value = pageText.value ? pageText.value+"\n"+text : text;
+    }
+    pageText.dispatchEvent(new Event("input"));
+  }
+
+  insertResultBtn.addEventListener("click", ()=>{
+    const top = tape[0];
+    const text = (top && top.result===calcDisplay) ? (top.expr+" = "+top.result) : calcDisplay;
+    insertText(text);
+  });
+  clearTapeBtn.addEventListener("click", ()=>{
+    tape = [];
+    lsDel("calc-tape");
+    renderTape();
+  });
+
+  function openCalc(){
+    calcScrim.classList.add("show");
+    calcDrawer.classList.add("show");
+    renderCalcDisplay();
+    renderTape();
+  }
+  function closeCalc(){
+    calcScrim.classList.remove("show");
+    calcDrawer.classList.remove("show");
+  }
+  calcFab.addEventListener("click", openCalc);
+  calcCloseBtn.addEventListener("click", closeCalc);
+  calcScrim.addEventListener("click", (ev)=>{ if(ev.target===calcScrim) closeCalc(); });
+
+  /* ---------------- init ---------------- */
+  switchSection("diary");
+  if(activeDiaryId){ showEditor(); } else { showList(); }
+
+  /* ---------------- service worker registration ---------------- */
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", ()=>{
+      navigator.serviceWorker.register("sw.js").catch(()=>{/* offline support unavailable */});
+    });
+  }
+})();
+</script>
+</body>
+</html>
