@@ -221,6 +221,90 @@
   .tape-row button svg{width:13px; height:13px; display:block; pointer-events:none;}
   .tape-row button:disabled{opacity:0.3;}
 
+  /* ---------- calendar view ---------- */
+  .calendar-view{flex:1; min-height:0; display:none; flex-direction:column;}
+  .calendar-view.show{display:flex;}
+  .cal-toolbar{display:flex; align-items:center; justify-content:space-between; padding:14px 16px 4px; flex-shrink:0;}
+  .cal-toolbar .cal-month{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--ink);}
+  .cal-nav{display:flex; align-items:center; gap:2px;}
+  .cal-nav button{padding:8px; border-radius:8px; color:var(--ink-muted);}
+  .cal-nav button:active{background:rgba(46,42,34,0.08);}
+  .cal-nav svg{width:17px; height:17px; display:block;}
+  .cal-today-btn{font-size:11.5px; font-weight:600; color:var(--oxblood); padding:6px 10px; border-radius:14px; background:rgba(122,48,48,0.09); margin-left:4px;}
+
+  .cal-weekdays{display:grid; grid-template-columns:repeat(7,1fr); padding:6px 10px 0; flex-shrink:0;}
+  .cal-weekdays span{text-align:center; font-size:10.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.03em;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:1fr; gap:2px; padding:4px 10px 8px; flex-shrink:0;}
+  .cal-cell{
+    position:relative; aspect-ratio:1/1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:9px; font-size:13px; color:var(--ink);
+  }
+  .cal-cell.other-month{color:rgba(46,42,34,0.28);}
+  .cal-cell.today{font-weight:700; color:var(--oxblood);}
+  .cal-cell.selected{background:var(--brass); color:#2A2010; font-weight:700;}
+  .cal-cell .dot{width:4px; height:4px; border-radius:50%; background:var(--oxblood); margin-top:2px;}
+  .cal-cell.selected .dot{background:#2A2010;}
+  .cal-cell.other-month .dot{background:rgba(122,48,48,0.35);}
+
+  .cal-divider{border-top:1px solid rgba(46,42,34,0.1); flex-shrink:0;}
+  .cal-day-panel{flex:1; min-height:0; display:flex; flex-direction:column; padding:10px 16px 0;}
+  .cal-day-head{display:flex; align-items:center; justify-content:space-between; padding-bottom:8px; flex-shrink:0;}
+  .cal-day-head .label{font-size:13.5px; font-weight:600; color:var(--ink);}
+  .cal-add-btn{
+    display:inline-flex; align-items:center; gap:5px; padding:7px 12px; border-radius:20px;
+    background:rgba(194,160,94,0.22); color:var(--brass-dark); font-size:12px; font-weight:700;
+  }
+  .cal-add-btn svg{width:13px; height:13px;}
+  .cal-add-btn:active{transform:scale(0.96);}
+
+  .cal-event-list{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:10px;}
+  .cal-empty{padding:20px 4px; text-align:center; color:var(--ink-muted); font-size:13px;}
+  .cal-event-row{
+    display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid rgba(46,42,34,0.08);
+  }
+  .cal-event-dot{width:8px; height:8px; border-radius:50%; background:var(--brass); flex-shrink:0;}
+  .cal-event-main{flex:1; min-width:0;}
+  .cal-event-title{font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .cal-event-meta{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-muted); margin-top:2px;}
+  .cal-event-meta svg{width:11px; height:11px;}
+  .cal-event-del{flex-shrink:0; color:var(--oxblood); padding:8px; margin:-8px; opacity:0.65;}
+  .cal-event-del svg{width:14px; height:14px; display:block; pointer-events:none;}
+
+  /* ---------- add-event drawer ---------- */
+  .event-drawer{
+    position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:var(--paper); border-radius:18px 18px 0 0;
+    box-shadow:0 -10px 30px rgba(0,0,0,0.35);
+    max-height:90vh; overflow-y:auto;
+    transform:translateY(100%); transition:transform 0.25s ease;
+    padding-bottom:calc(18px + var(--safe-bottom));
+  }
+  .event-drawer.show{transform:translateY(0);}
+  .event-drawer-head{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 4px;}
+  .event-drawer-head .title{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--ink);}
+  .event-drawer-head button{color:var(--ink-muted); padding:6px; margin:-6px;}
+  .event-drawer-head svg{width:19px; height:19px;}
+  .event-form{padding:8px 16px 4px; display:flex; flex-direction:column; gap:14px;}
+  .field-label{font-size:11.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px; display:block;}
+  .field-input{
+    width:100%; padding:11px 12px; border-radius:9px; background:rgba(46,42,34,0.05);
+    font-size:14.5px; color:var(--ink);
+  }
+  .field-row{display:flex; gap:10px;}
+  .field-row .field{flex:1;}
+  .remind-toggle{display:flex; align-items:center; justify-content:space-between; padding:2px 0;}
+  .remind-toggle .txt{font-size:13.5px; color:var(--ink);}
+  .remind-toggle .txt .sub{display:block; font-size:11px; color:var(--ink-muted); font-weight:400; margin-top:1px;}
+  .switch{position:relative; width:42px; height:24px; border-radius:12px; background:rgba(46,42,34,0.18); flex-shrink:0;}
+  .switch.on{background:var(--brass);}
+  .switch .knob{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left 0.15s ease; box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+  .switch.on .knob{left:20px;}
+  .event-save-btn{
+    margin:6px 16px 4px; padding:13px 0; border-radius:10px; background:var(--brass); color:#2A2010;
+    font-weight:700; font-size:14.5px; text-align:center;
+  }
+  .event-save-btn:active{transform:scale(0.98);}
+
   /* ---------- custom modal (replaces native confirm/alert, which Android & PWAs block) ---------- */
   .modal-scrim{position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:90; display:none; align-items:center; justify-content:center; padding:24px;}
   .modal-scrim.show{display:flex;}
@@ -266,6 +350,10 @@
     <button class="tab" id="tabNotebook" data-section="notebook">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M14 4v16"/><path d="M18 8h2"/><path d="M18 12h2"/><path d="M18 16h2"/></svg>
       Notebook
+    </button>
+    <button class="tab" id="tabCalendar" data-section="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
     </button>
   </div>
 
@@ -318,6 +406,37 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
         <span>Select a page on the list, or start a new one.</span>
       </div>
+
+      <!-- CALENDAR VIEW -->
+      <div class="calendar-view" id="calendarView">
+        <div class="cal-toolbar">
+          <div class="cal-month" id="calMonthLabel">—</div>
+          <div class="cal-nav">
+            <button type="button" id="calTodayBtn" class="cal-today-btn">Today</button>
+            <button type="button" id="calPrevBtn" aria-label="Previous month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" id="calNextBtn" aria-label="Next month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="cal-weekdays">
+          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-divider"></div>
+        <div class="cal-day-panel">
+          <div class="cal-day-head">
+            <span class="label" id="calDayLabel">—</span>
+            <button type="button" class="cal-add-btn" id="calAddBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Add
+            </button>
+          </div>
+          <div class="cal-event-list" id="calEventList"></div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -353,6 +472,39 @@
       </div>
       <div id="tapeList"></div>
     </div>
+  </div>
+
+  <div class="scrim" id="eventScrim"></div>
+  <div class="event-drawer" id="eventDrawer">
+    <div class="event-drawer-head">
+      <span class="title" id="eventDrawerTitle">Add reminder</span>
+      <button id="eventCloseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="event-form">
+      <div class="field">
+        <label class="field-label" for="eventTitleInput">What is it</label>
+        <input type="text" class="field-input" id="eventTitleInput" placeholder="e.g. Pay rent, Mom's birthday…" />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="eventDateInput">Date</label>
+          <input type="date" class="field-input" id="eventDateInput" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="eventTimeInput">Time</label>
+          <input type="time" class="field-input" id="eventTimeInput" />
+        </div>
+      </div>
+      <div class="remind-toggle" id="remindToggleRow">
+        <span class="txt">Remind me
+          <span class="sub">Notifies while Daybook is open in this browser</span>
+        </span>
+        <div class="switch" id="remindSwitch"><div class="knob"></div></div>
+      </div>
+    </div>
+    <button type="button" class="event-save-btn" id="eventSaveBtn">Save</button>
   </div>
 
   <!-- confirm modal -->
@@ -498,8 +650,9 @@
   /* ---------------- DOM refs ---------------- */
   const $ = (id) => document.getElementById(id);
   const clockEl = $("clock");
-  const tabDiary = $("tabDiary"), tabNotebook = $("tabNotebook");
+  const tabDiary = $("tabDiary"), tabNotebook = $("tabNotebook"), tabCalendar = $("tabCalendar");
   const listView = $("listView"), editorView = $("editorView"), noEntry = $("noEntry");
+  const calendarView = $("calendarView");
   const entryList = $("entryList");
   const newBtn = $("newBtn"), newBtnLabel = $("newBtnLabel");
   const clearAllBtn = $("clearAllBtn");
@@ -622,24 +775,39 @@
   /* ---------------- view switching ---------------- */
   function showList(){
     listView.classList.remove("hidden");
+    calendarView.classList.remove("show");
     editorView.classList.remove("show");
     noEntry.classList.add("hidden");
   }
   function showEditor(){
     listView.classList.add("hidden");
+    calendarView.classList.remove("show");
     renderEditor();
+  }
+  function showCalendar(){
+    listView.classList.add("hidden");
+    editorView.classList.remove("show");
+    noEntry.classList.add("hidden");
+    calendarView.classList.add("show");
+    renderCalendar();
   }
 
   function switchSection(sec){
     section = sec;
     tabDiary.classList.toggle("active", sec==="diary");
     tabNotebook.classList.toggle("active", sec==="notebook");
-    showList();
-    renderList();
+    tabCalendar.classList.toggle("active", sec==="calendar");
+    if(sec==="calendar"){
+      showCalendar();
+    } else {
+      showList();
+      renderList();
+    }
   }
 
   tabDiary.addEventListener("click", ()=>switchSection("diary"));
   tabNotebook.addEventListener("click", ()=>switchSection("notebook"));
+  tabCalendar.addEventListener("click", ()=>switchSection("calendar"));
   backBtn.addEventListener("click", ()=>{ showList(); renderList(); });
 
   /* ---------------- create / select / delete ---------------- */
@@ -839,6 +1007,242 @@
       showToast("Photo removed");
     });
   });
+
+  /* ---------------- calendar & reminders ---------------- */
+  const calMonthLabel = $("calMonthLabel"), calGrid = $("calGrid");
+  const calPrevBtn = $("calPrevBtn"), calNextBtn = $("calNextBtn"), calTodayBtn = $("calTodayBtn");
+  const calDayLabel = $("calDayLabel"), calEventList = $("calEventList"), calAddBtn = $("calAddBtn");
+  const eventScrim = $("eventScrim"), eventDrawer = $("eventDrawer"), eventDrawerTitle = $("eventDrawerTitle");
+  const eventCloseBtn = $("eventCloseBtn"), eventSaveBtn = $("eventSaveBtn");
+  const eventTitleInput = $("eventTitleInput"), eventDateInput = $("eventDateInput"), eventTimeInput = $("eventTimeInput");
+  const remindToggleRow = $("remindToggleRow"), remindSwitch = $("remindSwitch");
+
+  function pad2(n){ return n<10 ? "0"+n : ""+n; }
+  function dateKey(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
+  function todayKey(){ return dateKey(new Date()); }
+  function parseKey(key){ const [y,m,d] = key.split("-").map(Number); return new Date(y, m-1, d); }
+
+  let calEvents = JSON.parse(lsGet("calendar-events") || "{}"); // { "YYYY-MM-DD": [ {id,title,time,remind,notified} ] }
+  let calViewYear, calViewMonth; // month being displayed
+  let calSelectedKey = todayKey();
+  let editingEventId = null;
+  { const t = new Date(); calViewYear = t.getFullYear(); calViewMonth = t.getMonth(); }
+
+  function persistEvents(){ lsSet("calendar-events", JSON.stringify(calEvents)); }
+  function eventsFor(key){ return calEvents[key] || []; }
+  function sortedEventsFor(key){
+    return [...eventsFor(key)].sort((a,b)=>(a.time||"99:99").localeCompare(b.time||"99:99"));
+  }
+
+  function formatDayLabel(key){
+    const d = parseKey(key);
+    const isToday = key===todayKey();
+    const s = d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+    return isToday ? "Today · "+s : s;
+  }
+  function formatTime12(t){
+    if(!t) return "";
+    const [h,m] = t.split(":").map(Number);
+    const hh = ((h+11)%12)+1;
+    return hh+":"+pad2(m)+" "+(h<12?"AM":"PM");
+  }
+
+  function renderCalendar(){
+    const first = new Date(calViewYear, calViewMonth, 1);
+    const startOffset = first.getDay(); // 0=Sun
+    const daysInMonth = new Date(calViewYear, calViewMonth+1, 0).getDate();
+    const daysInPrevMonth = new Date(calViewYear, calViewMonth, 0).getDate();
+    calMonthLabel.textContent = first.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+
+    const cells = [];
+    for(let i=0;i<startOffset;i++){
+      const dayNum = daysInPrevMonth - startOffset + 1 + i;
+      const d = new Date(calViewYear, calViewMonth-1, dayNum);
+      cells.push({d, key:dateKey(d), other:true});
+    }
+    for(let day=1; day<=daysInMonth; day++){
+      const d = new Date(calViewYear, calViewMonth, day);
+      cells.push({d, key:dateKey(d), other:false});
+    }
+    let next = 1;
+    while(cells.length % 7 !== 0 || cells.length < 42){
+      const d = new Date(calViewYear, calViewMonth+1, next++);
+      cells.push({d, key:dateKey(d), other:true});
+      if(cells.length>=42) break;
+    }
+
+    const tKey = todayKey();
+    calGrid.innerHTML = cells.map(c=>{
+      let cls = "cal-cell";
+      if(c.other) cls += " other-month";
+      if(c.key===tKey) cls += " today";
+      if(c.key===calSelectedKey) cls += " selected";
+      const hasEvents = eventsFor(c.key).length>0;
+      return '<button type="button" class="'+cls+'" data-date="'+c.key+'">' +
+        c.d.getDate() +
+        (hasEvents ? '<span class="dot"></span>' : '') +
+        '</button>';
+    }).join("");
+
+    renderDayEvents();
+  }
+
+  function renderDayEvents(){
+    calDayLabel.textContent = formatDayLabel(calSelectedKey);
+    const list = sortedEventsFor(calSelectedKey);
+    if(list.length===0){
+      calEventList.innerHTML = '<div class="cal-empty">Nothing marked for this day yet.</div>';
+      return;
+    }
+    calEventList.innerHTML = list.map(ev=>{
+      const meta = [];
+      if(ev.time) meta.push('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg>'+formatTime12(ev.time));
+      if(ev.remind) meta.push('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Reminder set');
+      return '<div class="cal-event-row" data-event-id="'+ev.id+'">' +
+        '<div class="cal-event-dot"></div>' +
+        '<div class="cal-event-main">' +
+          '<div class="cal-event-title">'+escapeHtml(ev.title)+'</div>' +
+          (meta.length ? '<div class="cal-event-meta">'+meta.join('&nbsp;&nbsp;')+'</div>' : '') +
+        '</div>' +
+        '<button type="button" class="cal-event-del" data-event-del="'+ev.id+'" aria-label="Delete">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+        '</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  calGrid.addEventListener("click", (ev)=>{
+    const cell = ev.target.closest("[data-date]");
+    if(!cell) return;
+    const key = cell.getAttribute("data-date");
+    const d = parseKey(key);
+    if(d.getMonth()!==calViewMonth || d.getFullYear()!==calViewYear){
+      calViewYear = d.getFullYear(); calViewMonth = d.getMonth();
+    }
+    calSelectedKey = key;
+    renderCalendar();
+  });
+
+  calPrevBtn.addEventListener("click", ()=>{
+    calViewMonth--; if(calViewMonth<0){ calViewMonth=11; calViewYear--; }
+    renderCalendar();
+  });
+  calNextBtn.addEventListener("click", ()=>{
+    calViewMonth++; if(calViewMonth>11){ calViewMonth=0; calViewYear++; }
+    renderCalendar();
+  });
+  calTodayBtn.addEventListener("click", ()=>{
+    const t = new Date();
+    calViewYear = t.getFullYear(); calViewMonth = t.getMonth();
+    calSelectedKey = todayKey();
+    renderCalendar();
+  });
+
+  calEventList.addEventListener("click", (ev)=>{
+    const delBtn = ev.target.closest("[data-event-del]");
+    if(delBtn){
+      ev.stopPropagation();
+      const id = delBtn.getAttribute("data-event-del");
+      openConfirm("Remove this?", "This reminder will be permanently removed.", ()=>{
+        calEvents[calSelectedKey] = eventsFor(calSelectedKey).filter(e=>e.id!==id);
+        if(calEvents[calSelectedKey].length===0) delete calEvents[calSelectedKey];
+        persistEvents();
+        renderCalendar();
+        showToast("Removed");
+      });
+      return;
+    }
+    const row = ev.target.closest("[data-event-id]");
+    if(row) openEventDrawer(calSelectedKey, row.getAttribute("data-event-id"));
+  });
+
+  /* ---------- add / edit drawer ---------- */
+  function setSwitch(on){ remindSwitch.classList.toggle("on", !!on); }
+  remindToggleRow.addEventListener("click", ()=> setSwitch(!remindSwitch.classList.contains("on")) );
+
+  function openEventDrawer(dateKeyStr, eventId){
+    editingEventId = eventId || null;
+    const existing = eventId ? eventsFor(dateKeyStr).find(e=>e.id===eventId) : null;
+    eventDrawerTitle.textContent = existing ? "Edit reminder" : "Add to calendar";
+    eventTitleInput.value = existing ? existing.title : "";
+    eventDateInput.value = dateKeyStr;
+    eventTimeInput.value = existing ? (existing.time||"") : "";
+    setSwitch(existing ? !!existing.remind : false);
+    eventScrim.classList.add("show");
+    eventDrawer.classList.add("show");
+    setTimeout(()=>eventTitleInput.focus(), 200);
+  }
+  function closeEventDrawer(){
+    eventScrim.classList.remove("show");
+    eventDrawer.classList.remove("show");
+    editingEventId = null;
+  }
+  calAddBtn.addEventListener("click", ()=>openEventDrawer(calSelectedKey, null));
+  eventCloseBtn.addEventListener("click", closeEventDrawer);
+  eventScrim.addEventListener("click", (ev)=>{ if(ev.target===eventScrim) closeEventDrawer(); });
+
+  function requestNotifyPermission(){
+    if("Notification" in window && Notification.permission==="default"){
+      Notification.requestPermission().catch(()=>{});
+    }
+  }
+
+  eventSaveBtn.addEventListener("click", ()=>{
+    const title = eventTitleInput.value.trim();
+    if(!title){ showToast("Give it a title first"); eventTitleInput.focus(); return; }
+    const dateStr = eventDateInput.value || calSelectedKey;
+    const time = eventTimeInput.value || "";
+    const remind = remindSwitch.classList.contains("on");
+    if(remind) requestNotifyPermission();
+
+    // remove from old date if editing and date changed
+    if(editingEventId){
+      for(const k in calEvents){
+        calEvents[k] = calEvents[k].filter(e=>e.id!==editingEventId);
+        if(calEvents[k].length===0) delete calEvents[k];
+      }
+    }
+    const entry = {id:editingEventId||uid(), title, time, remind, notified:false};
+    calEvents[dateStr] = [...eventsFor(dateStr), entry];
+    persistEvents();
+
+    calSelectedKey = dateStr;
+    const d = parseKey(dateStr);
+    calViewYear = d.getFullYear(); calViewMonth = d.getMonth();
+    closeEventDrawer();
+    renderCalendar();
+    showToast(editingEventId ? "Reminder updated" : "Added to calendar");
+  });
+
+  /* ---------- reminder checking (fires while Daybook is open) ---------- */
+  function checkReminders(){
+    const now = new Date();
+    const nowKey = dateKey(now);
+    const nowHM = pad2(now.getHours())+":"+pad2(now.getMinutes());
+    let changed = false;
+    const todays = eventsFor(nowKey);
+    todays.forEach(ev=>{
+      if(!ev.remind || ev.notified) return;
+      const due = ev.time ? (ev.time<=nowHM) : true;
+      if(due){
+        fireReminder(ev);
+        ev.notified = true;
+        changed = true;
+      }
+    });
+    if(changed){ persistEvents(); if(section==="calendar") renderDayEvents(); }
+  }
+  function fireReminder(ev){
+    const body = ev.time ? ("at "+formatTime12(ev.time)) : "today";
+    if("Notification" in window && Notification.permission==="granted"){
+      try{ new Notification("Daybook reminder", {body: ev.title+" — "+body}); }
+      catch(e){ showToast("Reminder: "+ev.title); }
+    } else {
+      showToast("Reminder: "+ev.title);
+    }
+  }
+  setInterval(checkReminders, 20000);
+  setTimeout(checkReminders, 1500);
 
   /* ---------------- calculator (rebuilt for correctness) ---------------- */
   const calcFab = $("calcFab"), calcScrim = $("calcScrim"), calcDrawer = $("calcDrawer"), calcCloseBtn = $("calcCloseBtn");
