@@ -27,12 +27,12 @@ input,textarea{font-family:inherit;border:none;outline:none;background:transpare
 header{flex-shrink:0;padding:calc(10px + var(--safe-top)) 16px 8px;display:flex;align-items:baseline;justify-content:space-between}
 header h1{margin:0;font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--cream)}
 header .clock{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted-dark)}
-.tabs{display:flex;gap:4px;padding:0 12px;flex-shrink:0}
-.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;font-size:14px;font-weight:600;border-radius:10px 10px 0 0;background:rgba(244,238,220,.08);color:var(--muted-dark);border-bottom:3px solid transparent}
+.tabs{display:flex;gap:2px;padding:0;flex-shrink:0}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 0;font-size:14px;font-weight:600;border-radius:0;background:rgba(244,238,220,.08);color:var(--muted-dark);border-bottom:3px solid transparent}
 .tab.active{background:var(--paper);color:var(--ink);border-bottom-color:var(--brass)}
 .tab svg{width:15px;height:15px;flex-shrink:0}
-main{flex:1;min-height:0;padding:0 12px 12px;display:flex;flex-direction:column}
-.panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);border-radius:0 12px 12px 12px;box-shadow:0 8px 24px var(--paper-edge);overflow:hidden}
+main{flex:1;min-height:0;padding:0;display:flex;flex-direction:column}
+.panel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);border-radius:0;box-shadow:none;overflow:hidden}
 
 /* list */
 .list-view{flex:1;min-height:0;display:flex;flex-direction:column}
@@ -240,7 +240,7 @@ main{flex:1;min-height:0;padding:0 12px 12px;display:flex;flex-direction:column}
 #sizeSel{width:58px !important}
 .ribbon.collapsed .fmt-bar{display:none !important}
 @media print{body *{visibility:hidden}#pageText,#pageText *{visibility:visible}#app{height:auto;display:block}#pageText{position:absolute;left:0;top:0;width:100%;height:auto;overflow:visible;background:none !important;padding:0 !important;zoom:1 !important}}
-@media (min-width:640px){#app{max-width:480px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.5)}}
+@media (min-width:700px){.calendar-view{max-width:640px;width:100%;margin:0 auto}.calc-drawer,.event-drawer{max-width:520px;margin:0 auto}}
 </style>
 </head>
 <body>
